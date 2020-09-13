@@ -1,0 +1,104 @@
+############
+# Numerics #
+############
+
+#### Newton solver ####
+
+#TimeDepFlag = TRUE
+DeltaTStart = 1.0e-4
+
+DampFlag = TRUE
+LambdaMin = 1.0e-2
+
+UseNumericalJac is TRUE
+#UseSecOrdJac is TRUE
+UseModifiedNewton = TRUE
+
+MaxIter = 50
+TolRes = 1.0e-12
+TolDy = 1.0e-8
+
+
+#### grid ####
+
+DeltaNewGrid = 100
+#OneSoluOneGrid is TRUE
+initialgridpoints = 499
+maxgridpoints = 499
+q = -0.25
+R = 60
+
+
+########################
+# Sensitivity Analysis #
+########################
+
+#ReactionFluxAnal is TRUE
+
+#######
+# I/O #
+#######
+
+OutputPath is ./Arc_S
+
+#WriteRes is TRUE
+#WriteFullRes is TRUE
+#WriteEverySolution is TRUE
+
+StartProfilesFile is ./NC7H16_p01_0chi0.001tf0373to0330
+
+#############
+# Chemistry #
+#############
+
+globalReaction is NC7H16 + 11O2 == 8H2O + 7CO2;
+MechanismFile is nHeptane_68.pre
+
+fuel is NC7H16
+oxidizer is O2
+
+#########
+# Flame #
+#########
+
+Flame is CounterFlowDiffusion
+#StrainRate = 100
+ArclengthCont = TRUE
+ConstLewisNumber is TRUE
+LewisNumberFile is LewisNumbers
+Flame is Counterflow Diffusion in Mixture Fraction Space
+
+Scalar DissipationRate = 0.001
+Scalar DissipationRate = 0.002
+
+#ComputeWithRadiation is TRUE
+
+pressure = 101325
+
+#######################
+# Boundary conditions #
+#######################
+
+#ToSpecies N2
+#FromSpecies NC7H16
+#ContType is Temperature
+#ContInc = -10
+#ContSide is left
+#ContBound = 330
+
+Fuel Side {
+	dirichlet {
+		t = 373
+		y->NC7H16 = 1
+	}
+}
+			
+Oxidizer Side {
+	dirichlet {
+		t = 330
+        x->co2 = 0.115972306
+		x->o2 = 0.153459965
+		x->n2 = 0.730567729
+	}
+}
+
