@@ -1,0 +1,67 @@
+############
+# Numerics #
+############
+
+InitialGridPoints = 501
+
+DeltaTMax = 1.0e-6
+RelTol = 1.0e-6
+AbsTol = 1.0e-8
+
+TStart = 0.0e-2
+TEnd = 10.0e-3
+
+UseNumericalDM = TRUE
+
+#######
+# I/O #
+#######
+
+NumberOfOutputs = 500
+
+OutputPath is ini
+
+#############
+# Chemistry #
+#############
+
+globalReaction is NC7H16 + 11O2 == 8H2O + 7CO2;
+MechanismFile is nHeptane_68.pre
+
+fuel is NC7H16
+oxidizer is O2
+
+#########
+# Flame #
+#########
+
+Flame is Transient Flamelet
+
+CAinFile is ./CA0.in
+
+Scalar DissRate = 1
+
+#ComputeWithRadiation is TRUE
+LewisNumberFile is LewisNumbers
+
+Pressure = 1e5
+
+#######################
+# Boundary conditions #
+#######################
+
+Fuel Side {
+	dirichlet {
+		t = 373
+		y->NC7H16 = 1.0
+	}
+}
+			
+Oxidizer Side {
+	dirichlet {
+		t = 330
+        x->co2 = 0.115972306
+		x->o2 = 0.153459965
+		x->n2 = 0.730567729
+	}
+}
