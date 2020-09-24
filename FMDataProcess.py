@@ -189,7 +189,7 @@ class DataProcess:
 		print("数据处理完毕...\n")
 		return dataZC
 
-	def writeFlameletFile(self,flaName = "fm.fla"):
+	def writeFlameletFile(self,flaName = "fm.fla",outputGridPoint = 101):
 		print("正在写入火焰面数据...\n")
 		#获得火焰面数据和组分数据
 		dataZC = self.chistToProgVar()
@@ -201,7 +201,7 @@ class DataProcess:
 		c = np.linspace(0,1,n)
 
 		with open(flaName,"w") as f:
-			for i in range(0,grid,5):
+			for i in range(0,grid,self.grid // outputGridPoint):
 				# 头文件
 				f.write("HEADER\n")
 				f.write("PREMIX_STOICH_SCADIS\t0.000000E+00\n")
