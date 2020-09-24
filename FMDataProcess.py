@@ -1,6 +1,7 @@
 #这是一个用来处理FlameMaster产生数据的类
 import numpy as np
 import os
+import shutil
 
 class DataProcess:
 	def __init__(self,inputDataDir):
@@ -17,8 +18,37 @@ class DataProcess:
 		#Zst
 		self.Zst = self.getZst()
 
+	#如果目录不存在，检测是否存在含有上支数据的up目录和中支数据的mid目录
+	#如存在，将数据复制到inputDataDir内
+	def moveFile(self):
+		if not os.path.exists(self.dataDir):
+			print("目标路径不存在，将创建路径\n")
+			os.makedirs(self.dataDir)
+			if os.path.exists("up") and os.path.exists("mid"):
+				file_dir = "up/"
+				new_dir = "AllData/"
+				file_list = os.listdir(file_dir)
+
+				for i in file_list:
+					new_filename = file_dir[:-1] + "_" + i[12:20]
+					shutil.copy(file_dir+i,new_dir+new_filename)
+
+				file_dir = "mid/"
+				new_dir = "AllData/"
+				file_list = os.listdir(file_dir)
+
+				for i in file_list:
+					new_filename = file_dir[:-1] + "_" + i[12:20]
+					shutil.copy(file_dir+i,new_dir+new_filename)
+
+			else:
+				print("上支或中支数据不存在\n")
+		else:
+			pass
+
 	#返回文件目录
 	def getFileList(self):
+		self.moveFile()
 		return os.listdir(self.dataDir)
 
 	#返回第num文件的内容
@@ -86,6 +116,7 @@ class DataProcess:
 
 	#将原始数据按最高温度高低顺序存入allData中，返回三维矩阵
 	def orginData2npy(self):
+		print("正在读取源数据....\n")
 		#建立一个三维numpy矩阵，x为文件数，y为物料+温度+过程变量+过程变量源项，z为网格数目
 		allData = np.ones([self.fileNum,self.SpeNum + 3,self.grid],dtype = float)
 		#温度开始的位置
@@ -116,6 +147,7 @@ class DataProcess:
 			i = i + 1
 			chiTmax[pos] = 0.0
 		#np.save(orginData,allData)
+		print("数据读取完毕...\n")
 		return allData
 
 	#返回物料组分表
@@ -137,6 +169,7 @@ class DataProcess:
 
 	#将耗散率与质量分数为基的数据转换为质量分数和进度变量
 	def chistToProgVar(self,progVarNum = 41):
+		print("正在处理数据...\n")
 		#载入数据
 		allData = self.orginData2npy()
 		#转置为 x 为 grid，y 为 组分，z为文件数/不同耗散率
@@ -153,9 +186,11 @@ class DataProcess:
 				dataZC[i][j] = np.interp(progVar,newData[i][0][::-1],newData[i][j + 1][::-1])
 
 		np.save("alldataZC.npy",dataZC)
+		print("数据处理完毕...\n")
 		return dataZC
 
 	def writeFlameletFile(self,flaName = "fm.fla"):
+		print("正在写入火焰面数据...\n")
 		#获得火焰面数据和组分数据
 		dataZC = self.chistToProgVar()
 		speList = self.getSpeList()
@@ -164,7 +199,6 @@ class DataProcess:
 
 		z = np.linspace(0,1,grid)
 		c = np.linspace(0,1,n)
-
 
 		with open(flaName,"w") as f:
 			for i in range(0,grid,5):
@@ -206,3 +240,5 @@ class DataProcess:
 						f.write('\n')
 
 				f.write('\n\n')
+		print("火焰面文件已生成\n")
+		print("文件为%s\n"%(os.getcwd() + '\\' +flaName))
