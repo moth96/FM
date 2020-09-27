@@ -247,7 +247,7 @@ class DataProcess:
 
 
 	#写火焰面文件，火焰面在当量质量分数附近加密，网格数为101
-	def writeMsehRefineFlameletFile(self,flaName = "fm.fla"):
+	def writeMsehRefineFlameletFile(self,flaName = "mrfm.fla"):
 		print("正在写入火焰面数据...\n")
 		#获得火焰面数据和组分数据
 		dataZC = self.chistToProgVar()
