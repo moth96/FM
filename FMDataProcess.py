@@ -189,6 +189,8 @@ class DataProcess:
 		print("数据处理完毕...\n")
 		return dataZC
 
+
+	#写火焰面文件，文件名为flaName，网格数为outputGridPoint
 	def writeFlameletFile(self,flaName = "fm.fla",outputGridPoint = 101):
 		print("正在写入火焰面数据...\n")
 		#获得火焰面数据和组分数据
@@ -242,3 +244,104 @@ class DataProcess:
 				f.write('\n\n')
 		print("火焰面文件已生成\n")
 		print("文件为%s\n"%(os.getcwd() + '\\' +flaName))
+
+
+	#写火焰面文件，火焰面在当量质量分数附近加密，网格数为101
+	def writeMsehRefineFlameleFile(self,flaName = "fm.fla"):
+		print("正在写入火焰面数据...\n")
+		#获得火焰面数据和组分数据
+		dataZC = self.chistToProgVar()
+		speList = self.getSpeList()
+
+		(grid,spe,n) = dataZC.shape
+
+		z = np.linspace(0,1,grid)
+		c = np.linspace(0,1,n)
+
+		with open(flaName,"w") as f:
+			for i in range(0,grid//10):
+				# 头文件
+				f.write("HEADER\n")
+				f.write("PREMIX_STOICH_SCADIS\t0.000000E+00\n")
+				f.write("z\t%s\n"%str(round(z[i],3)))
+				f.write("NUMOFSPECIES\t%d\n"%self.SpeNum)
+				f.write("GRIDPOINTS\t%s\n"%str(n))
+				f.write("STOICH_Z\t%s\n"%str(self.Zst))
+				f.write("PRESSURE\t1.013250E+05\n")
+				# 主体
+				f.write("BODY\n")
+				# 进度变量
+				f.write("REACTION_PROGRESS\n")
+				for j in range(n):
+					f.write(str(round(c[j],3)))
+					f.write('\t')
+					if (j%5 == 4):
+						f.write('\n')
+				f.write('\n')
+
+				# 物料
+				for j in range(spe - 1):
+					f.write("%s\n"%str(speList[j + 1]))
+					for k in range(n):
+						f.write(str(dataZC[i][j][k]))
+						f.write('\t')
+						if (k%5 == 4):
+							f.write('\n')
+					f.write('\n')
+
+				# 进度变量源项
+				f.write("PREMIX_YCDOT\n")
+				for k in range(n):
+					f.write(str(dataZC[i][-1][k]))
+					f.write('\t')
+					if (k%5 == 4):
+						f.write('\n')
+
+				f.write('\n\n')
+
+			for i in range(grid//10,grid,9):
+				# 头文件
+				f.write("HEADER\n")
+				f.write("PREMIX_STOICH_SCADIS\t0.000000E+00\n")
+				f.write("z\t%s\n"%str(round(z[i],3)))
+				f.write("NUMOFSPECIES\t%d\n"%self.SpeNum)
+				f.write("GRIDPOINTS\t%s\n"%str(n))
+				f.write("STOICH_Z\t%s\n"%str(self.Zst))
+				f.write("PRESSURE\t1.013250E+05\n")
+				# 主体
+				f.write("BODY\n")
+				# 进度变量
+				f.write("REACTION_PROGRESS\n")
+				for j in range(n):
+					f.write(str(round(c[j],3)))
+					f.write('\t')
+					if (j%5 == 4):
+						f.write('\n')
+				f.write('\n')
+
+				# 物料
+				for j in range(spe - 1):
+					f.write("%s\n"%str(speList[j + 1]))
+					for k in range(n):
+						f.write(str(dataZC[i][j][k]))
+						f.write('\t')
+						if (k%5 == 4):
+							f.write('\n')
+					f.write('\n')
+
+				# 进度变量源项
+				f.write("PREMIX_YCDOT\n")
+				for k in range(n):
+					f.write(str(dataZC[i][-1][k]))
+					f.write('\t')
+					if (k%5 == 4):
+						f.write('\n')
+
+				f.write('\n\n')
+
+
+		print("火焰面文件已生成\n")
+		print("文件为%s\n"%(os.getcwd() + '\\' +flaName))
+
+
+	
