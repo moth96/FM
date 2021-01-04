@@ -167,6 +167,20 @@ class DataProcess:
 		speList.append("PREMIX_YCDOT")
 		return speList
 
+	# 修正 c = 0 或 1时 c源项为0
+	# z = 0 或 c = 0时 除反应物 y为0
+	def modify(self, dataZC):
+		a = dataZC
+		a[a < 1e-10] = 0
+		# z 500 spe 70 c 40
+		a = a.transpose()
+		# c = 0 或 1时 c源项为0
+		a[0][-1] = 0
+		a[-1][-1] = 0
+
+		a = a.transpose()
+		return a
+
 	#将耗散率与质量分数为基的数据转换为质量分数和进度变量
 	def chistToProgVar(self,progVarNum = 41):
 		print("正在处理数据...\n")
@@ -185,6 +199,7 @@ class DataProcess:
 			for j in range(self.SpeNum + 2):
 				dataZC[i][j] = np.interp(progVar,newData[i][0][::-1],newData[i][j + 1][::-1])
 
+		dataZC = self.modify(dataZC)
 		np.save("alldataZC.npy",dataZC)
 		print("数据处理完毕...\n")
 		return dataZC
@@ -247,7 +262,7 @@ class DataProcess:
 
 
 	#写火焰面文件，火焰面在当量质量分数附近加密，网格数为101
-	def writeMsehRefineFlameletFile(self,flaName = "mrfm.fla"):
+	def writeMsehRefineFlameletFile(self,flaName = "fm.fla"):
 		print("正在写入火焰面数据...\n")
 		#获得火焰面数据和组分数据
 		dataZC = self.chistToProgVar()
@@ -263,18 +278,17 @@ class DataProcess:
 				# 头文件
 				f.write("HEADER\n")
 				f.write("PREMIX_STOICH_SCADIS\t0.000000E+00\n")
-				f.write("z\t%s\n"%str(round(z[i],3)))
+				f.write("Z\t%.9E\n"%z[i])
 				f.write("NUMOFSPECIES\t%d\n"%self.SpeNum)
 				f.write("GRIDPOINTS\t%s\n"%str(n))
-				f.write("STOICH_Z\t%s\n"%str(self.Zst))
+				f.write("STOICH_Z\t%.9E\n"%self.Zst)
 				f.write("PRESSURE\t1.013250E+05\n")
 				# 主体
 				f.write("BODY\n")
 				# 进度变量
 				f.write("REACTION_PROGRESS\n")
 				for j in range(n):
-					f.write(str(round(c[j],3)))
-					f.write('\t')
+					f.write("%.9E\t"%c[j])
 					if (j%5 == 4):
 						f.write('\n')
 				f.write('\n')
@@ -283,8 +297,7 @@ class DataProcess:
 				for j in range(spe - 1):
 					f.write("%s\n"%str(speList[j + 1]))
 					for k in range(n):
-						f.write(str(dataZC[i][j][k]))
-						f.write('\t')
+						f.write("%.9E\t"%dataZC[i][j][k])
 						if (k%5 == 4):
 							f.write('\n')
 					f.write('\n')
@@ -292,8 +305,7 @@ class DataProcess:
 				# 进度变量源项
 				f.write("PREMIX_YCDOT\n")
 				for k in range(n):
-					f.write(str(dataZC[i][-1][k]))
-					f.write('\t')
+					f.write("%.9E\t"%dataZC[i][-1][k])
 					if (k%5 == 4):
 						f.write('\n')
 
@@ -303,18 +315,17 @@ class DataProcess:
 				# 头文件
 				f.write("HEADER\n")
 				f.write("PREMIX_STOICH_SCADIS\t0.000000E+00\n")
-				f.write("z\t%s\n"%str(round(z[i],3)))
+				f.write("Z\t%.9E\n"%z[i])
 				f.write("NUMOFSPECIES\t%d\n"%self.SpeNum)
 				f.write("GRIDPOINTS\t%s\n"%str(n))
-				f.write("STOICH_Z\t%s\n"%str(self.Zst))
+				f.write("STOICH_Z\t%.9E\n"%self.Zst)
 				f.write("PRESSURE\t1.013250E+05\n")
 				# 主体
 				f.write("BODY\n")
 				# 进度变量
 				f.write("REACTION_PROGRESS\n")
 				for j in range(n):
-					f.write(str(round(c[j],3)))
-					f.write('\t')
+					f.write("%.9E\t"%c[j])
 					if (j%5 == 4):
 						f.write('\n')
 				f.write('\n')
@@ -323,8 +334,7 @@ class DataProcess:
 				for j in range(spe - 1):
 					f.write("%s\n"%str(speList[j + 1]))
 					for k in range(n):
-						f.write(str(dataZC[i][j][k]))
-						f.write('\t')
+						f.write("%.9E\t"%dataZC[i][j][k])
 						if (k%5 == 4):
 							f.write('\n')
 					f.write('\n')
@@ -332,8 +342,7 @@ class DataProcess:
 				# 进度变量源项
 				f.write("PREMIX_YCDOT\n")
 				for k in range(n):
-					f.write(str(dataZC[i][-1][k]))
-					f.write('\t')
+					f.write("%.9E\t"%dataZC[i][-1][k])
 					if (k%5 == 4):
 						f.write('\n')
 
